@@ -1,0 +1,72 @@
+[
+  {
+    "id": "intro",
+    "file": "audio/intro.mp3",
+    "text": "नमस्ते! सुनिए आज की टॉप ए आई न्यूज़, सिर्फ एक मिनट में।"
+  },
+  {
+    "id": "news1_headline",
+    "file": "audio/news1_headline.mp3",
+    "text": "पहली खबर। पेंटागन के बड़े ए आई सौदे।"
+  },
+  {
+    "id": "news1_summary",
+    "file": "audio/news1_summary.mp3",
+    "text": "अमेरिकी सेना ने Google, Nvidia, SpaceX और OpenAI को क्लासिफाइड सिस्टम के लिए कॉन्ट्रैक्ट दिए। Anthropic इस लिस्ट में नहीं है। ए आई अब राष्ट्रीय सुरक्षा का अहम हिस्सा बन रहा है।"
+  },
+  {
+    "id": "news2_headline",
+    "file": "audio/news2_headline.mp3",
+    "text": "दूसरी खबर। OpenAI ने लॉन्च किया GPT साढ़े पाँच।"
+  },
+  {
+    "id": "news2_summary",
+    "file": "audio/news2_summary.mp3",
+    "text": "नया मॉडल पहले से तेज़ और सस्ता है। साइंटिफिक रिसर्च और प्रोडक्टिविटी एजेंट्स पर खास फोकस। डेवलपर्स को कम कीमत में ज़्यादा पावर मिलेगी।"
+  },
+  {
+    "id": "news3_headline",
+    "file": "audio/news3_headline.mp3",
+    "text": "तीसरी खबर। Meta ने ख़रीदा रोबोटिक्स स्टार्टअप ARI।"
+  },
+  {
+    "id": "news3_summary",
+    "file": "audio/news3_summary.mp3",
+    "text": "इस अधिग्रहण से Meta ह्यूमनॉइड रोबोट्स की रेस में आगे बढ़ा। बड़ी टेक कंपनियाँ अब फिज़िकल ए आई की ओर बढ़ रही हैं।"
+  },
+  {
+    "id": "news4_headline",
+    "file": "audio/news4_headline.mp3",
+    "text": "चौथी खबर। Anthropic का Claude Security बीटा।"
+  },
+  {
+    "id": "news4_summary",
+    "file": "audio/news4_summary.mp3",
+    "text": "Claude Opus 4.7 से चलने वाला यह टूल कोडबेस में अपने आप वल्नरेबिलिटी ढूँढता है। ए आई अब सिक्योरिटी इंजीनियर का काम करने लगा है।"
+  },
+  {
+    "id": "news5_headline",
+    "file": "audio/news5_headline.mp3",
+    "text": "पाँचवीं खबर। Musk बनाम OpenAI केस में बड़ा खुलासा।"
+  },
+  {
+    "id": "news5_summary",
+    "file": "audio/news5_summary.mp3",
+    "text": "ट्रायल में सामने आया कि xAI ने OpenAI के मॉडल्स पर ट्रेनिंग की थी। डेटा और कॉपीराइट की लड़ाई और तेज़ हो गई।"
+  },
+  {
+    "id": "news6_headline",
+    "file": "audio/news6_headline.mp3",
+    "text": "छठी खबर। ज़ुकरबर्ग बोले — एजेंट्स अभी कच्चे हैं।"
+  },
+  {
+    "id": "news6_summary",
+    "file": "audio/news6_summary.mp3",
+    "text": "मार्क ज़ुकरबर्ग ने कहा कि मौजूदा ए आई एजेंट्स मदर टेस्ट पास नहीं करते, यानी अभी पूरी तरह भरोसे लायक नहीं। ऑटोनॉमस ए आई की हाइप के बीच रियलिटी चेक।"
+  },
+  {
+    "id": "outro",
+    "file": "audio/outro.mp3",
+    "text": "रोज़ाना ए आई अपडेट्स के लिए फ़ॉलो करें!"
+  }
+]
