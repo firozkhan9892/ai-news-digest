@@ -28,8 +28,9 @@ await renderMedia({
   codec: "h264",
   outputLocation: "/mnt/documents/ai-news-hindi.mp4",
   puppeteerInstance: browser,
-  muted: true,
+  muted: false,
   concurrency: 1,
+  audioCodec: "aac",
 });
 
 await browser.close({ silent: false });
