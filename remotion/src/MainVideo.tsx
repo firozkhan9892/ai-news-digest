@@ -1,4 +1,4 @@
-import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate } from "remotion";
+import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, Audio, staticFile, Sequence } from "remotion";
 import { TransitionSeries, linearTiming } from "@remotion/transitions";
 import { fade } from "@remotion/transitions/fade";
 import { wipe } from "@remotion/transitions/wipe";
@@ -6,6 +6,10 @@ import { Intro } from "./scenes/Intro";
 import { NewsScene } from "./scenes/NewsScene";
 import { Outro } from "./scenes/Outro";
 import { hind } from "./fonts";
+
+const FPS = 30;
+const PAD = 18; // ~0.6s padding after audio
+const TRANSITION = 16;
 
 const news = [
   {
@@ -15,6 +19,8 @@ const news = [
     why: "AI अब राष्ट्रीय सुरक्षा का अहम हिस्सा बन रहा है।",
     emoji: "🛡️",
     color: "#1e3a5f",
+    headSec: 3.07,
+    sumSec: 12.77,
   },
   {
     n: 2,
@@ -23,6 +29,8 @@ const news = [
     why: "डेवलपर्स को कम कीमत में ज़्यादा पावर मिलेगी।",
     emoji: "🤖",
     color: "#0d7a5f",
+    headSec: 4.13,
+    sumSec: 9.89,
   },
   {
     n: 3,
@@ -31,6 +39,8 @@ const news = [
     why: "बड़ी टेक कंपनियाँ अब फिज़िकल AI की ओर बढ़ रही हैं।",
     emoji: "🦾",
     color: "#4f46e5",
+    headSec: 3.9,
+    sumSec: 7.62,
   },
   {
     n: 4,
@@ -39,6 +49,8 @@ const news = [
     why: "AI अब सिक्योरिटी इंजीनियर का काम करने लगा है।",
     emoji: "🔐",
     color: "#c44569",
+    headSec: 3.44,
+    sumSec: 8.78,
   },
   {
     n: 5,
@@ -47,6 +59,8 @@ const news = [
     why: "AI इंडस्ट्री में डेटा और कॉपीराइट की लड़ाई और तेज़ हो गई।",
     emoji: "⚖️",
     color: "#9b4423",
+    headSec: 4.04,
+    sumSec: 7.76,
   },
   {
     n: 6,
@@ -55,13 +69,21 @@ const news = [
     why: "ऑटोनॉमस AI एजेंट्स की हाइप के बीच रियलिटी चेक।",
     emoji: "🧠",
     color: "#6c5ce7",
+    headSec: 3.95,
+    sumSec: 11.38,
   },
 ];
+
+const introDur = Math.ceil(3.9 * FPS) + PAD; // 135
+const outroDur = Math.ceil(2.51 * FPS) + 60; // ~135
+const newsDurs = news.map((s) => Math.ceil((s.headSec + s.sumSec) * FPS) + PAD);
+
+export const TOTAL_DURATION =
+  introDur + outroDur + newsDurs.reduce((a, b) => a + b, 0) - TRANSITION * (1 + news.length);
 
 export const MainVideo = () => {
   const frame = useCurrentFrame();
   const { durationInFrames } = useVideoConfig();
-  // Subtle global gradient drift
   const g = interpolate(frame, [0, durationInFrames], [0, 360]);
   return (
     <AbsoluteFill style={{ fontFamily: hind, background: "#0a0a14" }}>
@@ -71,24 +93,31 @@ export const MainVideo = () => {
         }}
       />
       <TransitionSeries>
-        <TransitionSeries.Sequence durationInFrames={150}>
+        <TransitionSeries.Sequence durationInFrames={introDur}>
           <Intro />
+          <Audio src={staticFile("audio/intro.mp3")} />
         </TransitionSeries.Sequence>
-        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: 15 })} />
-        {news.map((item, i) => (
-          <>
-            <TransitionSeries.Sequence key={`s${i}`} durationInFrames={240}>
+        <TransitionSeries.Transition presentation={fade()} timing={linearTiming({ durationInFrames: TRANSITION })} />
+        {news.map((item, i) => {
+          const headFrames = Math.ceil(item.headSec * FPS);
+          return [
+            <TransitionSeries.Sequence key={`s${i}`} durationInFrames={newsDurs[i]}>
               <NewsScene {...item} />
-            </TransitionSeries.Sequence>
+              <Audio src={staticFile(`audio/news${item.n}_headline.mp3`)} />
+              <Sequence from={headFrames}>
+                <Audio src={staticFile(`audio/news${item.n}_summary.mp3`)} />
+              </Sequence>
+            </TransitionSeries.Sequence>,
             <TransitionSeries.Transition
               key={`t${i}`}
               presentation={wipe({ direction: i % 2 === 0 ? "from-right" : "from-left" })}
-              timing={linearTiming({ durationInFrames: 18 })}
-            />
-          </>
-        ))}
-        <TransitionSeries.Sequence durationInFrames={210}>
+              timing={linearTiming({ durationInFrames: TRANSITION })}
+            />,
+          ];
+        })}
+        <TransitionSeries.Sequence durationInFrames={outroDur}>
           <Outro />
+          <Audio src={staticFile("audio/outro.mp3")} />
         </TransitionSeries.Sequence>
       </TransitionSeries>
     </AbsoluteFill>
