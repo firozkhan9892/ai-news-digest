@@ -75,7 +75,6 @@ await renderStill({
 await browser.close({ silent: false });
 
 console.log("Muxing with system ffmpeg (native aac)...");
-fs.rmSync(outPath, { force: true });
 execSync(
   `ffmpeg -y -i ${videoPath} -i ${audioPath} -c:v copy -c:a aac -b:a 192k -shortest ${outPath}`,
   { stdio: "inherit" }
