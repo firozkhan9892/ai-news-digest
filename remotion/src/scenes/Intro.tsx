@@ -1,5 +1,6 @@
 import { AbsoluteFill, useCurrentFrame, useVideoConfig, interpolate, spring } from "remotion";
 import { hind, space } from "../fonts";
+import data from "../news-data.json";
 
 export const Intro = () => {
   const frame = useCurrentFrame();
@@ -46,7 +47,7 @@ export const Intro = () => {
           opacity: s3,
         }}
       >
-        आज की टॉप 6 ख़बरें · 2 मई 2026
+        आज की टॉप {data.news.length} ख़बरें · {data.date}
       </div>
     </AbsoluteFill>
   );
