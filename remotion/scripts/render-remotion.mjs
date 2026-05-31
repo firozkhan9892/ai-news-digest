@@ -15,8 +15,14 @@ const bundled = await bundle({
   webpackOverride: (c) => c,
 });
 
+// Use an explicit chromium only when available (sandbox); otherwise let Remotion
+// download and manage its own headless shell (CI runners).
+const explicitChrome =
+  process.env.PUPPETEER_EXECUTABLE_PATH ||
+  (fs.existsSync("/bin/chromium") ? "/bin/chromium" : undefined);
+
 const browser = await openBrowser("chrome", {
-  browserExecutable: process.env.PUPPETEER_EXECUTABLE_PATH ?? "/bin/chromium",
+  browserExecutable: explicitChrome,
   chromiumOptions: { args: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage"] },
   chromeMode: "chrome-for-testing",
 });
