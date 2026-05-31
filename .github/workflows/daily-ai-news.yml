@@ -1,0 +1,66 @@
+name: Daily AI News Video
+
+on:
+  schedule:
+    # 01:30 UTC = 7:00 AM IST, daily
+    - cron: "30 1 * * *"
+  workflow_dispatch: {} # allow manual run from the Actions tab
+
+jobs:
+  build-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install ffmpeg + Chromium system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg \
+            libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 \
+            libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 libxrandr2 \
+            libgbm1 libasound2t64 libpango-1.0-0 libcairo2
+
+      - name: Install dependencies
+        working-directory: remotion
+        run: bun install
+
+      - name: Ensure Remotion browser
+        working-directory: remotion
+        run: bunx remotion browser ensure
+
+      - name: Generate today's news (Lovable AI)
+        working-directory: remotion
+        env:
+          LOVABLE_API_KEY: ${{ secrets.LOVABLE_API_KEY }}
+        run: bun scripts/generate-news.mjs
+
+      - name: Generate Hindi audio (ElevenLabs)
+        working-directory: remotion
+        env:
+          ELEVENLABS_API_KEY: ${{ secrets.ELEVENLABS_API_KEY }}
+          # Optional: override the voice. Default is George (male).
+          ELEVENLABS_VOICE_ID: ${{ secrets.ELEVENLABS_VOICE_ID }}
+        run: bun scripts/generate-audio.mjs --force
+
+      - name: Render video + thumbnail
+        working-directory: remotion
+        env:
+          OUTPUT_DIR: ${{ github.workspace }}/out
+        run: bun scripts/render-remotion.mjs
+
+      - name: Upload video + thumbnail
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-news-${{ github.run_number }}
+          path: |
+            out/ai-news-hindi.mp4
+            out/ai-news-thumbnail.png
+            remotion/src/news-data.json
+          retention-days: 14

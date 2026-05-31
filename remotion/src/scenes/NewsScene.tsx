@@ -8,9 +8,10 @@ type Props = {
   why: string;
   emoji: string;
   color: string;
+  total?: number;
 };
 
-export const NewsScene = ({ n, headline, summary, why, emoji, color }: Props) => {
+export const NewsScene = ({ n, headline, summary, why, emoji, color, total = 6 }: Props) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const sNum = spring({ frame, fps, config: { damping: 12 } });
@@ -61,7 +62,7 @@ export const NewsScene = ({ n, headline, summary, why, emoji, color }: Props) =>
             opacity: sNum,
           }}
         >
-          NEWS · {String(n).padStart(2, "0")} OF 06
+          NEWS · {String(n).padStart(2, "0")} OF {String(total).padStart(2, "0")}
         </div>
       </div>
 
