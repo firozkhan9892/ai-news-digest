@@ -6,76 +6,16 @@ import { Intro } from "./scenes/Intro";
 import { NewsScene } from "./scenes/NewsScene";
 import { Outro } from "./scenes/Outro";
 import { hind } from "./fonts";
+import data from "./news-data.json";
 
 const FPS = 30;
 const PAD = 18; // ~0.6s padding after audio
 const TRANSITION = 16;
 
-const news = [
-  {
-    n: 1,
-    headline: "पेंटागन के बड़े AI सौदे",
-    summary: "अमेरिकी सेना ने Google, Nvidia, SpaceX और OpenAI को क्लासिफाइड सिस्टम के लिए कॉन्ट्रैक्ट दिए। Anthropic इस लिस्ट में नहीं है।",
-    why: "AI अब राष्ट्रीय सुरक्षा का अहम हिस्सा बन रहा है।",
-    emoji: "🛡️",
-    color: "#1e3a5f",
-    headSec: 3.07,
-    sumSec: 12.77,
-  },
-  {
-    n: 2,
-    headline: "OpenAI ने लॉन्च किया GPT-5.5",
-    summary: "नया मॉडल पहले से तेज़ और सस्ता है। साइंटिफिक रिसर्च और प्रोडक्टिविटी एजेंट्स पर खास फोकस।",
-    why: "डेवलपर्स को कम कीमत में ज़्यादा पावर मिलेगी।",
-    emoji: "🤖",
-    color: "#0d7a5f",
-    headSec: 4.13,
-    sumSec: 9.89,
-  },
-  {
-    n: 3,
-    headline: "Meta ने ख़रीदा रोबोटिक्स स्टार्टअप ARI",
-    summary: "Assured Robot Intelligence के अधिग्रहण से Meta ह्यूमनॉइड रोबोट्स की रेस में आगे बढ़ा।",
-    why: "बड़ी टेक कंपनियाँ अब फिज़िकल AI की ओर बढ़ रही हैं।",
-    emoji: "🦾",
-    color: "#4f46e5",
-    headSec: 3.9,
-    sumSec: 7.62,
-  },
-  {
-    n: 4,
-    headline: "Anthropic का Claude Security बीटा",
-    summary: "Claude Opus 4.7 से चलने वाला यह टूल कोडबेस में अपने आप वल्नरेबिलिटी ढूँढता है।",
-    why: "AI अब सिक्योरिटी इंजीनियर का काम करने लगा है।",
-    emoji: "🔐",
-    color: "#c44569",
-    headSec: 3.44,
-    sumSec: 8.78,
-  },
-  {
-    n: 5,
-    headline: "Musk vs OpenAI केस में खुलासा",
-    summary: "ट्रायल में सामने आया कि xAI ने OpenAI के मॉडल्स पर ट्रेनिंग की थी।",
-    why: "AI इंडस्ट्री में डेटा और कॉपीराइट की लड़ाई और तेज़ हो गई।",
-    emoji: "⚖️",
-    color: "#9b4423",
-    headSec: 4.04,
-    sumSec: 7.76,
-  },
-  {
-    n: 6,
-    headline: "ज़ुकरबर्ग बोले — एजेंट्स अभी कच्चे हैं",
-    summary: "मार्क ज़ुकरबर्ग ने कहा कि मौजूदा AI एजेंट्स \"मदर टेस्ट\" पास नहीं करते, यानी अभी पूरी तरह भरोसे लायक नहीं।",
-    why: "ऑटोनॉमस AI एजेंट्स की हाइप के बीच रियलिटी चेक।",
-    emoji: "🧠",
-    color: "#6c5ce7",
-    headSec: 3.95,
-    sumSec: 11.38,
-  },
-];
+export const news = data.news;
 
-const introDur = Math.ceil(3.9 * FPS) + PAD; // 135
-const outroDur = Math.ceil(2.51 * FPS) + 60; // ~135
+const introDur = Math.ceil(data.introSec * FPS) + PAD;
+const outroDur = Math.ceil(data.outroSec * FPS) + 60;
 const newsDurs = news.map((s) => Math.ceil((s.headSec + s.sumSec) * FPS) + PAD);
 
 export const TOTAL_DURATION =
@@ -102,7 +42,7 @@ export const MainVideo = () => {
           const headFrames = Math.ceil(item.headSec * FPS);
           return [
             <TransitionSeries.Sequence key={`s${i}`} durationInFrames={newsDurs[i]}>
-              <NewsScene {...item} />
+              <NewsScene {...item} total={news.length} />
               <Audio src={staticFile(`audio/news${item.n}_headline.mp3`)} />
               <Sequence from={headFrames}>
                 <Audio src={staticFile(`audio/news${item.n}_summary.mp3`)} />
