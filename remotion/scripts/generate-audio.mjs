@@ -1,60 +1,36 @@
+// Reads remotion/src/news-data.json, generates Hindi TTS audio with ElevenLabs,
+// measures each clip's real duration with ffprobe, and writes the durations
+// back into news-data.json so the Remotion composition timing stays in sync.
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
+import { execSync } from "child_process";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const DATA = path.resolve(__dirname, "../src/news-data.json");
 
 const KEY = process.env.ELEVENLABS_API_KEY;
 if (!KEY) {
-  console.error("ELEVENLABS_API_KEY missing. Add it as a Build Secret in Workspace Settings.");
+  console.error("ELEVENLABS_API_KEY missing. Add it as a GitHub Actions secret / Build Secret.");
   process.exit(1);
 }
 
-// Hindi-capable multilingual voice (Sarah). Override via env if you want.
-const VOICE = process.env.ELEVENLABS_VOICE_ID || "EXAVITQu4vr4xnSDxMaL";
+// George (male, multilingual). Override via env if you want a different voice.
+const VOICE = process.env.ELEVENLABS_VOICE_ID || "JBFqnCBsd6RMkjVDRZzb";
 const MODEL = "eleven_multilingual_v2";
 
-const OUT = path.resolve("public/audio");
+const OUT = path.resolve(__dirname, "../public/audio");
 fs.mkdirSync(OUT, { recursive: true });
 
-// Source of truth: same news content as MainVideo.tsx, split into headline + summary per scene.
-const news = [
-  {
-    n: 1,
-    headline: "पहली खबर। पेंटागन के बड़े ए आई सौदे।",
-    summary: "अमेरिकी सेना ने Google, Nvidia, SpaceX और OpenAI को क्लासिफाइड सिस्टम के लिए कॉन्ट्रैक्ट दिए। Anthropic इस लिस्ट में नहीं है। ए आई अब राष्ट्रीय सुरक्षा का अहम हिस्सा बन रहा है।",
-  },
-  {
-    n: 2,
-    headline: "दूसरी खबर। OpenAI ने लॉन्च किया GPT साढ़े पाँच।",
-    summary: "नया मॉडल पहले से तेज़ और सस्ता है। साइंटिफिक रिसर्च और प्रोडक्टिविटी एजेंट्स पर खास फोकस। डेवलपर्स को कम कीमत में ज़्यादा पावर मिलेगी।",
-  },
-  {
-    n: 3,
-    headline: "तीसरी खबर। Meta ने ख़रीदा रोबोटिक्स स्टार्टअप ARI।",
-    summary: "इस अधिग्रहण से Meta ह्यूमनॉइड रोबोट्स की रेस में आगे बढ़ा। बड़ी टेक कंपनियाँ अब फिज़िकल ए आई की ओर बढ़ रही हैं।",
-  },
-  {
-    n: 4,
-    headline: "चौथी खबर। Anthropic का Claude Security बीटा।",
-    summary: "Claude Opus 4.7 से चलने वाला यह टूल कोडबेस में अपने आप वल्नरेबिलिटी ढूँढता है। ए आई अब सिक्योरिटी इंजीनियर का काम करने लगा है।",
-  },
-  {
-    n: 5,
-    headline: "पाँचवीं खबर। Musk बनाम OpenAI केस में बड़ा खुलासा।",
-    summary: "ट्रायल में सामने आया कि xAI ने OpenAI के मॉडल्स पर ट्रेनिंग की थी। डेटा और कॉपीराइट की लड़ाई और तेज़ हो गई।",
-  },
-  {
-    n: 6,
-    headline: "छठी खबर। ज़ुकरबर्ग बोले — एजेंट्स अभी कच्चे हैं।",
-    summary: "मार्क ज़ुकरबर्ग ने कहा कि मौजूदा ए आई एजेंट्स मदर टेस्ट पास नहीं करते, यानी अभी पूरी तरह भरोसे लायक नहीं। ऑटोनॉमस ए आई की हाइप के बीच रियलिटी चेक।",
-  },
-];
+const data = JSON.parse(fs.readFileSync(DATA, "utf8"));
 
 const segments = [
-  { id: "intro", text: "नमस्ते! सुनिए आज की टॉप ए आई न्यूज़, सिर्फ एक मिनट में।" },
-  ...news.flatMap((s) => [
-    { id: `news${s.n}_headline`, text: s.headline },
-    { id: `news${s.n}_summary`, text: s.summary },
+  { id: "intro", text: data.introText },
+  ...data.news.flatMap((s) => [
+    { id: `news${s.n}_headline`, text: s.spokenHeadline },
+    { id: `news${s.n}_summary`, text: s.spokenSummary },
   ]),
-  { id: "outro", text: "रोज़ाना ए आई अपडेट्स के लिए फ़ॉलो करें!" },
+  { id: "outro", text: data.outroText },
 ];
 
 async function tts(text) {
@@ -80,8 +56,18 @@ async function tts(text) {
   return Buffer.from(await r.arrayBuffer());
 }
 
+function durationOf(file) {
+  const out = execSync(
+    `ffprobe -v error -show_entries format=duration -of default=nw=1:nk=1 "${file}"`
+  )
+    .toString()
+    .trim();
+  return parseFloat(out);
+}
+
 const force = process.argv.includes("--force");
 const manifest = [];
+const durations = {};
 
 for (const s of segments) {
   const out = path.join(OUT, `${s.id}.mp3`);
@@ -93,8 +79,18 @@ for (const s of segments) {
     fs.writeFileSync(out, buf);
     console.log("  wrote", out, buf.length, "bytes");
   }
+  durations[s.id] = durationOf(out);
   manifest.push({ id: s.id, file: `audio/${s.id}.mp3`, text: s.text });
 }
 
+// Write measured durations back into news-data.json.
+data.introSec = durations.intro;
+data.outroSec = durations.outro;
+for (const s of data.news) {
+  s.headSec = durations[`news${s.n}_headline`];
+  s.sumSec = durations[`news${s.n}_summary`];
+}
+fs.writeFileSync(DATA, JSON.stringify(data, null, 2) + "\n");
 fs.writeFileSync(path.join(OUT, "manifest.json"), JSON.stringify(manifest, null, 2));
-console.log("\nDONE. Wrote", manifest.length, "audio files +manifest.json");
+
+console.log("\nDONE. Wrote", manifest.length, "audio files + manifest.json, durations synced into news-data.json");
